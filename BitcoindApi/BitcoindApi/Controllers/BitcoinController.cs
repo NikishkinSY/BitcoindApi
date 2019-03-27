@@ -6,7 +6,19 @@ namespace BitcoindApi.Controllers
     [ApiController]
     public class BitcoinController : ControllerBase
     {
+        [HttpPost]
         public void SendBtc(string address, decimal amount)
+        {
+            
+        }
+
+        public void GetLast()
+        {
+            
+        }
+
+        [HttpGet]
+        public void Update()
         {
             
         }
