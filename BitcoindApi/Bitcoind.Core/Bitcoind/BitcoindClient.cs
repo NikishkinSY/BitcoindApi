@@ -1,4 +1,5 @@
-﻿using Bitcoind.Core.Bitcoind.Dto;
+﻿using System.Collections.Generic;
+using Bitcoind.Core.Bitcoind.Dto;
 using Bitcoind.Core.Helpers;
 using Microsoft.Extensions.Logging;
 using RestSharp;
@@ -36,7 +37,7 @@ namespace Bitcoind.Core.Bitcoind
             _logger = logger;
         }
         
-        public async Task<SendToAddressDto> SendToAddressAsync(string address, decimal amount, string wallet = null)
+        public async Task<Response<string>> SendToAddressAsync(string address, decimal amount, string wallet = null)
         {
             var request = GetRequest(wallet);
 
@@ -48,10 +49,10 @@ namespace Bitcoind.Core.Bitcoind
                 @params = new JsonArray { address, amount }
             });
 
-            return await HandleRequestAsync<SendToAddressDto>(request);
+            return await HandleRequestAsync<Response<string>>(request);
         }
 
-        public async Task<ListWalletsDto> GetListWalletsAsync()
+        public async Task<Response<List<string>>> GetListWalletsAsync()
         {
             var request = GetRequest(string.Empty);
 
@@ -62,10 +63,10 @@ namespace Bitcoind.Core.Bitcoind
                 method = ListWalletsCommand
             });
 
-            return await HandleRequestAsync<ListWalletsDto>(request);
+            return await HandleRequestAsync<Response<List<string>>>(request);
         }
 
-        public async Task<GetBalanceDto> GetBalanceAsync(string wallet)
+        public async Task<Response<decimal>> GetBalanceAsync(string wallet)
         {
             var request = GetRequest(wallet);
             
@@ -77,10 +78,10 @@ namespace Bitcoind.Core.Bitcoind
                 @params = new JsonArray { "*" }
             });
 
-            return await HandleRequestAsync<GetBalanceDto>(request);
+            return await HandleRequestAsync<Response<decimal>>(request);
         }
 
-        public async Task<ListTransactionsDto> GetListTransactionsAsync(string wallet)
+        public async Task<Response<List<BitcoinTransactionDto>>> GetListTransactionsAsync(string wallet)
         {
             var request = GetRequest(wallet);
 
@@ -91,10 +92,10 @@ namespace Bitcoind.Core.Bitcoind
                 method = ListTransactionsCommand
             });
 
-            return await HandleRequestAsync<ListTransactionsDto>(request);
+            return await HandleRequestAsync<Response<List<BitcoinTransactionDto>>>(request);
         }
 
-        public async Task<ValidateAddressResponse> ValidateAddressAsync(string address)
+        public async Task<Response<ValidateAddressResult>> ValidateAddressAsync(string address)
         {
             var request = GetRequest(string.Empty);
 
@@ -106,7 +107,7 @@ namespace Bitcoind.Core.Bitcoind
                 @params = new JsonArray { address }
             });
 
-            return await HandleRequestAsync<ValidateAddressResponse>(request);
+            return await HandleRequestAsync<Response<ValidateAddressResult>>(request);
         }
 
         private async Task<T> HandleRequestAsync<T>(IRestRequest request)

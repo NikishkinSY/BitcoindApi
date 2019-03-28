@@ -24,16 +24,23 @@ namespace Bitcoind.Service.Controllers
         }
 
         [HttpPost("sendbtc")]
-        public async Task SendBtc([FromQuery] string address, [FromQuery] decimal amount, [FromQuery] string fromWallet = null)
+        public async Task<IActionResult> SendBtc([FromQuery] string address, [FromQuery] decimal amount, [FromQuery] string fromWallet = null)
         {
             var result = await _bitcoindClient.ValidateAddressAsync(address);
             if (!result.Result.Isvalid)
-                return;
+                return StatusCode(400, $"invalid address ({address})");
 
             if (amount <= 0)
-                return;
+                return StatusCode(400, $"invalid amount ({amount})");
 
-            await _bitcoindClient.SendToAddressAsync(address, amount, fromWallet);
+            var response = await _bitcoindClient.SendToAddressAsync(address, amount, fromWallet);
+
+            if (response.Error != null)
+            {
+                return StatusCode(400, response.Error.Message);
+            }
+
+            return StatusCode(200);
         }
 
         [HttpGet("getlast")]

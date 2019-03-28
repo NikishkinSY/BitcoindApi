@@ -90,6 +90,10 @@ namespace Bitcoind.Service.Tests
         public void ValidateAddress(string address)
         {
             var result = _bitcoindClient.ValidateAddressAsync(address).Result;
+            var result2 = _bitcoindClient.GetBalanceAsync(address).Result;
+            var result3 = _bitcoindClient.GetListTransactionsAsync("first").Result;
+            var result4 = _bitcoindClient.GetListWalletsAsync().Result;
+            var result5 = _bitcoindClient.SendToAddressAsync(address, 1).Result;
             //_dataContext.Database.EnsureCreated();
             //var walls = _dataContext.HotWallets.ToList();
 

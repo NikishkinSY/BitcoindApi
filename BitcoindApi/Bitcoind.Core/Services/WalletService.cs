@@ -24,7 +24,6 @@ namespace Bitcoind.Core.Services
         {
             var balances = new List<HotWallet>();
             var wallets = await _bitcoindClient.GetListWalletsAsync();
-
             foreach (var wallet in wallets.Result)
             {
                 var balance = await _bitcoindClient.GetBalanceAsync(wallet);
