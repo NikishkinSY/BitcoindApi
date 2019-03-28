@@ -12,7 +12,7 @@ namespace Bitcoind.Service.HostServices
 {
     public class UpdateTransactionsHostedService: BackgroundService
     {
-        private readonly TransactionService _transactionService;
+        private readonly ITransactionService _transactionService;
         private readonly ILogger<UpdateWalletsHostedService> _logger;
         private readonly AppSettings _appSettings;
         private readonly IMemoryCache _cache;
@@ -25,7 +25,7 @@ namespace Bitcoind.Service.HostServices
             _logger = logger;
             _cache = cache;
             _serviceScope = scopeFactory.CreateScope();
-            _transactionService = _serviceScope.ServiceProvider.GetRequiredService<TransactionService>();
+            _transactionService = _serviceScope.ServiceProvider.GetRequiredService<ITransactionService>();
             _appSettings = _serviceScope.ServiceProvider.GetRequiredService<AppSettings>();
         }
 

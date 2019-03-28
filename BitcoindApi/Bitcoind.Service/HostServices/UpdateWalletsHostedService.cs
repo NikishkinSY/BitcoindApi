@@ -10,7 +10,7 @@ namespace Bitcoind.Service.HostServices
 {
     public class UpdateWalletsHostedService: BackgroundService
     {
-        private readonly WalletService _walletService;
+        private readonly IWalletService _walletService;
         private readonly ILogger<UpdateWalletsHostedService> _logger;
         private readonly AppSettings _appSettings;
 
@@ -20,7 +20,7 @@ namespace Bitcoind.Service.HostServices
         {
             _logger = logger;
             _serviceScope = scopeFactory.CreateScope();
-            _walletService = _serviceScope.ServiceProvider.GetRequiredService<WalletService>();
+            _walletService = _serviceScope.ServiceProvider.GetRequiredService<IWalletService>();
             _appSettings = _serviceScope.ServiceProvider.GetRequiredService<AppSettings>();
         }
 
