@@ -1,5 +1,5 @@
 ﻿using Bitcoind.Core.Bitcoind;
-using Bitcoind.Core.DAL.Entities;
+using Bitcoind.Core.Helpers;
 using BitcoindApi.Cache;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
@@ -24,15 +24,21 @@ namespace Bitcoind.Service.Controllers
         }
 
         [HttpPost("sendbtc")]
-        public async Task SendBtc(string address, decimal amount)
+        public async Task SendBtc([FromQuery] string address, [FromQuery] decimal amount)
         {
+            if (!BitcoinHelper.CheckAddress(address))
+                return;
+
+            if (amount <= 0)
+                return;
+
             await _bitcoindClient.SendToAddressAsync(address, amount);
         }
 
         [HttpGet("getlast")]
-        public IEnumerable<Transaction> GetLast()
+        public IEnumerable<Core.Dto.TransactionDto> GetLast()
         {
-            return _cache.Get<IEnumerable<Transaction>>(CacheConsts.LastIncomeTransactionsKey);
+            return _cache.Get<IEnumerable<Core.Dto.TransactionDto>>(CacheConsts.LastIncomeTransactionsKey);
         }
     }
 }

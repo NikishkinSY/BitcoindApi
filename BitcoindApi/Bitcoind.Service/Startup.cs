@@ -2,9 +2,10 @@
 using Bitcoind.Core.Automapper;
 using Bitcoind.Core.Bitcoind;
 using Bitcoind.Core.DAL;
+using Bitcoind.Core.Helpers;
 using Bitcoind.Core.Services;
+using Bitcoind.Service.Helpers;
 using Bitcoind.Service.HostServices;
-using BitcoindApi.Helpers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;

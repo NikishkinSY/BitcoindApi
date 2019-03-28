@@ -5,10 +5,8 @@ using System.Threading.Tasks;
 
 namespace Bitcoind.Core.Bitcoind
 {
-    public class BitcoindClient
+    public class BitcoindClient: IBitcoindClient
     {
-        private const string GetBalancePath = "/wallet/";
-
         private const string ListTransactionsCommand = "listtransactions";
         private const string GetBalanceCommand = "getbalance";
         private const string ListWalletsCommand = "listwallets";
@@ -62,7 +60,7 @@ namespace Bitcoind.Core.Bitcoind
 
         public async Task<GetBalanceDto> GetBalanceAsync(string wallet)
         {
-            var request = GetRequest(GetBalancePath + wallet);
+            var request = GetRequest(wallet);
             
             request.AddJsonBody(new
             {
@@ -78,7 +76,7 @@ namespace Bitcoind.Core.Bitcoind
 
         public async Task<ListTransactionsDto> GetListTransactionsAsync(string wallet)
         {
-            var request = GetRequest(GetBalancePath + wallet);
+            var request = GetRequest(wallet);
 
             request.AddJsonBody(new
             {
@@ -96,9 +94,9 @@ namespace Bitcoind.Core.Bitcoind
             return new RestClient(_domain);
         }
 
-        private IRestRequest GetRequest(string path)
+        private IRestRequest GetRequest(string wallet)
         {
-            var request = new RestRequest(path, Method.POST)
+            var request = new RestRequest($"/wallet/{wallet}", Method.POST)
             {
                 Credentials = new NetworkCredential(_login, _password)
             };

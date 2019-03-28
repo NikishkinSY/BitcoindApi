@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace BitcoindApi.Helpers
+namespace Bitcoind.Core.Helpers
 {
     public static class IntExtension
     {

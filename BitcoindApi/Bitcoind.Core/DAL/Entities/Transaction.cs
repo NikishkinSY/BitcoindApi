@@ -4,8 +4,9 @@ namespace Bitcoind.Core.DAL.Entities
 {
     public class Transaction
     {
+        public int Id { get; set; }
         public string Wallet { get; set; }
-        public Category Category { get; }
+        public Category Category { get; set; }
         public string Txid { get; set; }
         public string Address { get; set; }
         public decimal Amount { get; set; }
@@ -15,12 +16,15 @@ namespace Bitcoind.Core.DAL.Entities
         public override bool Equals(object other)
         {
             var transaction = other as Transaction;
-            return transaction != null && Txid.Equals(transaction.Txid, StringComparison.InvariantCultureIgnoreCase);
+            return transaction != null 
+                && Id == transaction.Id 
+                && Txid.Equals(transaction.Txid, StringComparison.InvariantCultureIgnoreCase)
+                && Category == transaction.Category;
         }
 
         public override int GetHashCode()
         {
-            return Txid.GetHashCode();
+            return $"{Id}_{Txid}_{(int)Category}".GetHashCode();
         }
     }
 }

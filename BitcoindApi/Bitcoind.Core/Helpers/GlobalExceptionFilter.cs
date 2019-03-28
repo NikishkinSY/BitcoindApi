@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Logging;
 
-namespace BitcoindApi.Helpers
+namespace Bitcoind.Core.Helpers
 {
     public class GlobalExceptionFilter : IExceptionFilter
     {

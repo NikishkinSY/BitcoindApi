@@ -1,10 +1,10 @@
 ﻿using Bitcoind.Core.Services;
-using BitcoindApi.Helpers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Threading;
 using System.Threading.Tasks;
+using Bitcoind.Service.Helpers;
 
 namespace Bitcoind.Service.HostServices
 {

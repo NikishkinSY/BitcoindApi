@@ -4,6 +4,6 @@ namespace Bitcoind.Core.Bitcoind.Dto
 {
     public class ListTransactionsDto
     {
-        public List<TransactionDto> Result { get; set; }
+        public List<BitcoinTransactionDto> Result { get; set; }
     }
 }

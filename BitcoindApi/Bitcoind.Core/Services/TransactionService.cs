@@ -1,13 +1,11 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using Bitcoind.Core.Bitcoind;
-using Bitcoind.Core.Bitcoind.Dto;
 using Bitcoind.Core.DAL;
 using Bitcoind.Core.DAL.Entities;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Bitcoind.Core.Services
 {
@@ -15,16 +13,13 @@ namespace Bitcoind.Core.Services
     {
         private readonly DataContext _dataContext;
         private readonly BitcoindClient _bitcoindClient;
-        private readonly IMemoryCache _cache;
 
         public TransactionService(
             DataContext dataContext,
-            BitcoindClient bitcoindClient,
-            IMemoryCache cache)
+            BitcoindClient bitcoindClient)
         {
             _dataContext = dataContext;
             _bitcoindClient = bitcoindClient;
-            _cache = cache;
         }
 
         public async Task<List<Transaction>> PullTransactionsAsync()
@@ -34,12 +29,18 @@ namespace Bitcoind.Core.Services
             var wallets = await _bitcoindClient.GetListWalletsAsync();
             foreach (var wallet in wallets.Result)
             {
-                var transactions = await _bitcoindClient.GetListTransactionsAsync(wallet);
-                var dbListTransactions = Mapper.Map<List<Transaction>>(transactions.Result);
+                var transactionsDto = await _bitcoindClient.GetListTransactionsAsync(wallet);
+                var transactionsDb = Mapper.Map<List<Transaction>>(transactionsDto.Result);
                 
-                foreach (var transaction in dbListTransactions)
+                foreach (var transaction in transactionsDb)
                 {
-                    var tran = _dataContext.Transactions.Find(transaction.Txid);
+                    if (transaction.Category == Category.Unknown)
+                    {
+                        continue;
+                    }
+
+                    var tran = await _dataContext.Transactions
+                        .FirstOrDefaultAsync(x => x.Txid == transaction.Txid && x.Category == transaction.Category);
                     if (tran == null)
                     {
                         transaction.Wallet = wallet;
@@ -51,8 +52,6 @@ namespace Bitcoind.Core.Services
                         tran.Confirmations = transaction.Confirmations;
                     }
                 }
-
-                newTransactions.AddRange(newTransactions);
             }
             
             await _dataContext.SaveChangesAsync();
@@ -60,13 +59,13 @@ namespace Bitcoind.Core.Services
             return newTransactions;
         }
 
-        public async Task<IEnumerable<Transaction>> GetLastIncomeTransactionsAsync()
+        public async Task<IEnumerable<Dto.TransactionDto>> GetLastIncomeTransactionsAsync()
         {
             var newTransactions = await PullTransactionsAsync();
             var newIncomeTransactions = newTransactions.Where(x => x.Category == Category.Receive);
             var notConfirmedIncomeTransactions = await _dataContext.Transactions.Where(x => x.Confirmations < 3).ToListAsync();
             var lastIncomeTransactions = notConfirmedIncomeTransactions.Union(newIncomeTransactions).ToList();
-            return lastIncomeTransactions;
+            return Mapper.Map<List<Dto.TransactionDto>>(lastIncomeTransactions.OrderBy(x => x.Date));
         }
     }
 }

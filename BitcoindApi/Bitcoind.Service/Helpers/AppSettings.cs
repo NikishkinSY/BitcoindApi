@@ -1,4 +1,4 @@
-﻿namespace BitcoindApi.Helpers
+﻿namespace Bitcoind.Service.Helpers
 {
     public class AppSettings
     {

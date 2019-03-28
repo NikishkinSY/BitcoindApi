@@ -1,7 +1,7 @@
 ﻿using Bitcoind.Core.Bitcoind;
 using Bitcoind.Core.DAL;
 using Bitcoind.Core.Services;
-using BitcoindApi.Helpers;
+using Bitcoind.Service.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

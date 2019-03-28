@@ -1,8 +1,8 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 using Bitcoind.Core.Services;
+using Bitcoind.Service.Helpers;
 using BitcoindApi.Cache;
-using BitcoindApi.Helpers;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;

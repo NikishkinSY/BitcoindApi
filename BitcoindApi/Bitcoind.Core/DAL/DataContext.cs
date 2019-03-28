@@ -10,9 +10,11 @@ namespace Bitcoind.Core.DAL
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             //Write Fluent API configurations here
-            modelBuilder.Entity<Transaction>().HasKey(s => s.Txid);
-            modelBuilder.Entity<HotWallet>().HasKey(s => s.Address);
+            modelBuilder.Entity<Transaction>().HasKey(x => x.Id);
+            modelBuilder.Entity<Transaction>().HasAlternateKey(x => new {x.Txid, x.Category});
             modelBuilder.Entity<Transaction>().HasOne<HotWallet>().WithMany().HasForeignKey(x => x.Wallet);
+
+            modelBuilder.Entity<HotWallet>().HasKey(s => s.Address);
             //Property Configurations
         }
 

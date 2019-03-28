@@ -1,6 +1,6 @@
 ﻿namespace Bitcoind.Core.Bitcoind.Dto
 {
-    public class TransactionDto
+    public class BitcoinTransactionDto
     {
         //public string Account { get; set; }
         public string Address { get; set; }
