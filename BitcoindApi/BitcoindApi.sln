@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28010.2026
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitcoindApi", "BitcoindApi\BitcoindApi.csproj", "{2C20B4F4-5C8B-4024-8C4A-938464D4A54C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bitcoind.Core", "Bitcoind.Core\Bitcoind.Core.csproj", "{FA090058-6DEF-433D-A671-99C436335EAC}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bitcoind.Service", "Bitcoind.Service\Bitcoind.Service.csproj", "{26EF3D90-D68A-425A-B7F1-E7433F19E271}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,10 +13,14 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{2C20B4F4-5C8B-4024-8C4A-938464D4A54C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2C20B4F4-5C8B-4024-8C4A-938464D4A54C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2C20B4F4-5C8B-4024-8C4A-938464D4A54C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2C20B4F4-5C8B-4024-8C4A-938464D4A54C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FA090058-6DEF-433D-A671-99C436335EAC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA090058-6DEF-433D-A671-99C436335EAC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA090058-6DEF-433D-A671-99C436335EAC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA090058-6DEF-433D-A671-99C436335EAC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{26EF3D90-D68A-425A-B7F1-E7433F19E271}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{26EF3D90-D68A-425A-B7F1-E7433F19E271}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{26EF3D90-D68A-425A-B7F1-E7433F19E271}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{26EF3D90-D68A-425A-B7F1-E7433F19E271}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
