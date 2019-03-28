@@ -4,7 +4,6 @@ using Bitcoind.Core.Bitcoind;
 using Bitcoind.Core.DAL;
 using Bitcoind.Core.Helpers;
 using Bitcoind.Core.Services;
-using Bitcoind.Service.Helpers;
 using Bitcoind.Service.HostServices;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -13,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using IHostingEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
 
 namespace Bitcoind.Service
@@ -37,11 +37,10 @@ namespace Bitcoind.Service
             }).SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
             var appSettings = Configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
-            services.AddTransient(provider => Configuration.GetSection(nameof(AppSettings))
-                .Get<AppSettings>());
-            services.AddScoped(x => new BitcoindClient(appSettings.BitcoindServer, appSettings.BitcoindUser, appSettings.BitcoindPassword, appSettings.BitcoindRpcJsonVersion));
-            services.AddTransient<TransactionService>();
-            services.AddTransient<WalletService>();
+            services.AddScoped(provider => Configuration.GetSection(nameof(AppSettings)).Get<AppSettings>());
+            services.AddScoped<IBitcoindClient, BitcoindClient>(x => new BitcoindClient(services.BuildServiceProvider().GetService<ILogger<BitcoindClient>>(), appSettings));
+            services.AddTransient<ITransactionService, TransactionService>();
+            services.AddTransient<IWalletService, WalletService>();
 
             services.AddSingleton<IHostedService, UpdateWalletsHostedService>();
             services.AddSingleton<IHostedService, UpdateTransactionsHostedService>();

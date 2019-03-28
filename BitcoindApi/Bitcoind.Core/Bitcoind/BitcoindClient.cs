@@ -1,4 +1,6 @@
 ﻿using Bitcoind.Core.Bitcoind.Dto;
+using Bitcoind.Core.Helpers;
+using Microsoft.Extensions.Logging;
 using RestSharp;
 using System.Net;
 using System.Threading.Tasks;
@@ -18,18 +20,23 @@ namespace Bitcoind.Core.Bitcoind
         private readonly string _version;
         private readonly RestClient _client;
 
-        public BitcoindClient(string domain, string login, string password, string version)
-        {
-            _domain = domain;
-            _login = login;
-            _password = password;
-            _version = version;
-            _client = CreateClient();
-        }
+        private readonly ILogger<BitcoindClient> _logger;
 
-        public async Task<SendToAddressDto> SendToAddressAsync(string address, decimal amount)
+        public BitcoindClient(
+            ILogger<BitcoindClient> logger,
+            AppSettings appSettings)
         {
-            var request = GetRequest(string.Empty);
+            _domain = appSettings.BitcoindServer;
+            _login = appSettings.BitcoindUser;
+            _password = appSettings.BitcoindPassword;
+            _version = appSettings.BitcoindRpcJsonVersion;
+            _client = CreateClient();
+            _logger = logger;
+        }
+        
+        public async Task<SendToAddressDto> SendToAddressAsync(string address, decimal amount, string wallet = null)
+        {
+            var request = GetRequest(wallet);
 
             request.AddJsonBody(new
             {
@@ -39,8 +46,7 @@ namespace Bitcoind.Core.Bitcoind
                 @params = new JsonArray { address, amount }
             });
 
-            var response = await _client.ExecuteTaskAsync<SendToAddressDto>(request);
-            return response.Data;
+            return await HandleRequestAsync<SendToAddressDto>(request);
         }
 
         public async Task<ListWalletsDto> GetListWalletsAsync()
@@ -54,8 +60,7 @@ namespace Bitcoind.Core.Bitcoind
                 method = ListWalletsCommand
             });
 
-            var response = await _client.ExecuteTaskAsync<ListWalletsDto>(request);
-            return response.Data;
+            return await HandleRequestAsync<ListWalletsDto>(request);
         }
 
         public async Task<GetBalanceDto> GetBalanceAsync(string wallet)
@@ -70,8 +75,7 @@ namespace Bitcoind.Core.Bitcoind
                 @params = new JsonArray { "*" }
             });
 
-            var response = await _client.ExecuteTaskAsync<GetBalanceDto>(request);
-            return response.Data;
+            return await HandleRequestAsync<GetBalanceDto>(request);
         }
 
         public async Task<ListTransactionsDto> GetListTransactionsAsync(string wallet)
@@ -85,7 +89,17 @@ namespace Bitcoind.Core.Bitcoind
                 method = ListTransactionsCommand
             });
 
-            var response = await _client.ExecuteTaskAsync<ListTransactionsDto>(request);
+            return await HandleRequestAsync<ListTransactionsDto>(request);
+        }
+
+        private async Task<T> HandleRequestAsync<T>(IRestRequest request)
+        {
+            var response = await _client.ExecuteTaskAsync<T>(request);
+            if (!response.IsSuccessful)
+            {
+                _logger.LogError($"Bad Response: {response.Content}");
+            }
+
             return response.Data;
         }
 
@@ -96,7 +110,7 @@ namespace Bitcoind.Core.Bitcoind
 
         private IRestRequest GetRequest(string wallet)
         {
-            var request = new RestRequest($"/wallet/{wallet}", Method.POST)
+            var request = new RestRequest($"/wallet/{wallet ?? ""}", Method.POST)
             {
                 Credentials = new NetworkCredential(_login, _password)
             };

@@ -57,10 +57,10 @@ namespace BitcoindApi.Tests
             //var newwalls = _dataContext.HotWallets.ToList();
         }
 
-        [TestCase("2MsfMBjLX8CHwBxhpFDnmr4zDrqydC76ctw", 1)]
-        public void CanSendToAddress(string wallet, int amount)
+        [TestCase("", 1, "")]
+        public void CanSendToAddress(string address, int amount, string fromWallet)
         {
-            var result = _bitcoindClient.SendToAddressAsync(wallet, amount).Result;
+            var result = _bitcoindClient.SendToAddressAsync(address, amount, fromWallet).Result;
             //_dataContext.Database.EnsureCreated();
             //var walls = _dataContext.HotWallets.ToList();
 

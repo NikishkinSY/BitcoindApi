@@ -9,14 +9,14 @@ using System.Threading.Tasks;
 
 namespace Bitcoind.Core.Services
 {
-    public class TransactionService
+    public class TransactionService: ITransactionService
     {
         private readonly DataContext _dataContext;
-        private readonly BitcoindClient _bitcoindClient;
+        private readonly IBitcoindClient _bitcoindClient;
 
         public TransactionService(
             DataContext dataContext,
-            BitcoindClient bitcoindClient)
+            IBitcoindClient bitcoindClient)
         {
             _dataContext = dataContext;
             _bitcoindClient = bitcoindClient;
@@ -53,7 +53,7 @@ namespace Bitcoind.Core.Services
                     }
                 }
             }
-            
+
             await _dataContext.SaveChangesAsync();
 
             return newTransactions;

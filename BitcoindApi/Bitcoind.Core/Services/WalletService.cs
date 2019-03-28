@@ -7,13 +7,13 @@ using EFCore.BulkExtensions;
 
 namespace Bitcoind.Core.Services
 {
-    public class WalletService
+    public class WalletService: IWalletService
     {
-        private readonly BitcoindClient _bitcoindClient;
+        private readonly IBitcoindClient _bitcoindClient;
         private readonly DataContext _dataContext;
 
         public WalletService(
-            BitcoindClient bitcoindClient,
+            IBitcoindClient bitcoindClient,
             DataContext dataContext)
         {
             _bitcoindClient = bitcoindClient;

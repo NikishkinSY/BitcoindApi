@@ -12,11 +12,11 @@ namespace Bitcoind.Service.Controllers
     [ApiController]
     public class BitcoinController : ControllerBase
     {
-        private readonly BitcoindClient _bitcoindClient;
+        private readonly IBitcoindClient _bitcoindClient;
         private readonly IMemoryCache _cache;
 
         public BitcoinController(
-            BitcoindClient bitcoindClient,
+            IBitcoindClient bitcoindClient,
             IMemoryCache cache)
         {
             _bitcoindClient = bitcoindClient;
@@ -24,7 +24,7 @@ namespace Bitcoind.Service.Controllers
         }
 
         [HttpPost("sendbtc")]
-        public async Task SendBtc([FromQuery] string address, [FromQuery] decimal amount)
+        public async Task SendBtc([FromQuery] string address, [FromQuery] decimal amount, [FromQuery] string fromWallet = null)
         {
             if (!BitcoinHelper.CheckAddress(address))
                 return;
@@ -32,7 +32,7 @@ namespace Bitcoind.Service.Controllers
             if (amount <= 0)
                 return;
 
-            await _bitcoindClient.SendToAddressAsync(address, amount);
+            await _bitcoindClient.SendToAddressAsync(address, amount, fromWallet);
         }
 
         [HttpGet("getlast")]

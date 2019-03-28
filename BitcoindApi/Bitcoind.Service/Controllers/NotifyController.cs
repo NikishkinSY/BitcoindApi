@@ -1,9 +1,7 @@
 ﻿using Bitcoind.Core.Services;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using BitcoindApi.Cache;
 using Microsoft.Extensions.Caching.Memory;
+using System.Threading.Tasks;
 
 namespace Bitcoind.Service.Controllers
 {
@@ -11,27 +9,20 @@ namespace Bitcoind.Service.Controllers
     [ApiController]
     public class NotifyController : ControllerBase
     {
-        private readonly TransactionService _transactionService;
-        private readonly WalletService _walletService;
+        private readonly ITransactionService _transactionService;
+        private readonly IWalletService _walletService;
         private readonly IMemoryCache _cache;
 
         public NotifyController(
-            TransactionService transactionService,
-            WalletService walletService,
+            ITransactionService transactionService,
+            IWalletService walletService,
             IMemoryCache cache)
         {
             _transactionService = transactionService;
             _walletService = walletService;
             _cache = cache;
         }
-
-        // GET api/values
-        [HttpGet]
-        public ActionResult<IEnumerable<string>> Get()
-        {
-            return new string[] { "value1", "value2" };
-        }
-
+        
         [HttpGet("blocknotify")]
         public async Task BlockNotify()
         {
@@ -39,11 +30,11 @@ namespace Bitcoind.Service.Controllers
             await _walletService.UpdateWalletsAsync(wallets);
         }
 
-        [HttpGet("walletnotify")]
-        public async Task WalletNotify()
-        {
-            _cache.Set(CacheConsts.LastIncomeTransactionsKey,
-                await _transactionService.GetLastIncomeTransactionsAsync());
-        }
+        //[HttpGet("walletnotify")]
+        //public async Task WalletNotify()
+        //{
+        //    _cache.Set(CacheConsts.LastIncomeTransactionsKey,
+        //        await _transactionService.GetLastIncomeTransactionsAsync());
+        //}
     }
 }

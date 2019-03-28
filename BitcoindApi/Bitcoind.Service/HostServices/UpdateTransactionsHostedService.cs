@@ -1,12 +1,12 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
+﻿using Bitcoind.Core.Helpers;
 using Bitcoind.Core.Services;
-using Bitcoind.Service.Helpers;
 using BitcoindApi.Cache;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Bitcoind.Service.HostServices
 {
@@ -49,7 +49,7 @@ namespace Bitcoind.Service.HostServices
             }
             else
             {
-                _logger.LogDebug("UpdateWalletsDelayInSeconds is not set in config file.");
+                _logger.LogDebug("UpdateTransactionsDelayInSeconds is not set in config file.");
             }
 
             _logger.LogDebug("UpdateTransactions background task is stopping.");
@@ -57,8 +57,15 @@ namespace Bitcoind.Service.HostServices
 
         private async Task UpdateTransactions()
         {
-            _cache.Set(CacheConsts.LastIncomeTransactionsKey,
-                await _transactionService.GetLastIncomeTransactionsAsync());
+            try
+            {
+                _cache.Set(CacheConsts.LastIncomeTransactionsKey,
+                    await _transactionService.GetLastIncomeTransactionsAsync());
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "UpdateTransactionsHostedService");
+            }
         }
     }
 }

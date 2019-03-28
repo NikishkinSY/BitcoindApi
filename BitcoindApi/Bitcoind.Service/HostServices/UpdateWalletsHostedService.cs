@@ -1,10 +1,10 @@
-﻿using Bitcoind.Core.Services;
+﻿using Bitcoind.Core.Helpers;
+using Bitcoind.Core.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Bitcoind.Service.Helpers;
 
 namespace Bitcoind.Service.HostServices
 {
@@ -51,8 +51,15 @@ namespace Bitcoind.Service.HostServices
 
         private async Task UpdateWallets()
         {
-            var wallets = await _walletService.GetWalletsAsync();
-            await _walletService.UpdateWalletsAsync(wallets);
+            try
+            {
+                var wallets = await _walletService.GetWalletsAsync();
+                await _walletService.UpdateWalletsAsync(wallets);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "UpdateWalletsHostedService");
+            }
         }
 
         public override void Dispose()

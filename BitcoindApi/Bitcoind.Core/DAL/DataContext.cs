@@ -11,6 +11,7 @@ namespace Bitcoind.Core.DAL
         {
             //Write Fluent API configurations here
             modelBuilder.Entity<Transaction>().HasKey(x => x.Id);
+            modelBuilder.Entity<Transaction>().Property(f => f.Id).ValueGeneratedOnAdd();
             modelBuilder.Entity<Transaction>().HasAlternateKey(x => new {x.Txid, x.Category});
             modelBuilder.Entity<Transaction>().HasOne<HotWallet>().WithMany().HasForeignKey(x => x.Wallet);
 
