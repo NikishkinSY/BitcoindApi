@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using RestSharp;
 using System.Net;
 using System.Threading.Tasks;
+using Bitcoind.Core.Bitcoind.DTO;
 
 namespace Bitcoind.Core.Bitcoind
 {
@@ -13,7 +14,8 @@ namespace Bitcoind.Core.Bitcoind
         private const string GetBalanceCommand = "getbalance";
         private const string ListWalletsCommand = "listwallets";
         private const string SendToAddressCommand = "sendtoaddress";
-        
+        private const string ValidateAddressCommand = "validateaddress";
+
         private readonly string _domain;
         private readonly string _login;
         private readonly string _password;
@@ -90,6 +92,21 @@ namespace Bitcoind.Core.Bitcoind
             });
 
             return await HandleRequestAsync<ListTransactionsDto>(request);
+        }
+
+        public async Task<ValidateAddressResponse> ValidateAddressAsync(string address)
+        {
+            var request = GetRequest(string.Empty);
+
+            request.AddJsonBody(new
+            {
+                jsonrpc = _version,
+                id = string.Empty,
+                method = ValidateAddressCommand,
+                @params = new JsonArray { address }
+            });
+
+            return await HandleRequestAsync<ValidateAddressResponse>(request);
         }
 
         private async Task<T> HandleRequestAsync<T>(IRestRequest request)

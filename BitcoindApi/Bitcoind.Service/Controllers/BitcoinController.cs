@@ -26,7 +26,8 @@ namespace Bitcoind.Service.Controllers
         [HttpPost("sendbtc")]
         public async Task SendBtc([FromQuery] string address, [FromQuery] decimal amount, [FromQuery] string fromWallet = null)
         {
-            if (!BitcoinHelper.CheckAddress(address))
+            var result = await _bitcoindClient.ValidateAddressAsync(address);
+            if (!result.Result.Isvalid)
                 return;
 
             if (amount <= 0)

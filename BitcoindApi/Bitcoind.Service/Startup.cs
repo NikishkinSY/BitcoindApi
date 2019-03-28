@@ -4,6 +4,7 @@ using Bitcoind.Core.Bitcoind;
 using Bitcoind.Core.DAL;
 using Bitcoind.Core.Helpers;
 using Bitcoind.Core.Services;
+using Bitcoind.Service.Helpers;
 using Bitcoind.Service.HostServices;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -29,21 +30,12 @@ namespace Bitcoind.Service
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMemoryCache();
-            services.AddDbContext<DataContext>(x => x.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
             services.AddMvc(options =>
             {
                 options.Filters.Add(typeof(GlobalExceptionFilter));
             }).SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
-            var appSettings = Configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
-            services.AddScoped(provider => Configuration.GetSection(nameof(AppSettings)).Get<AppSettings>());
-            services.AddScoped<IBitcoindClient, BitcoindClient>(x => new BitcoindClient(services.BuildServiceProvider().GetService<ILogger<BitcoindClient>>(), appSettings));
-            services.AddTransient<ITransactionService, TransactionService>();
-            services.AddTransient<IWalletService, WalletService>();
-
-            services.AddSingleton<IHostedService, UpdateWalletsHostedService>();
-            services.AddSingleton<IHostedService, UpdateTransactionsHostedService>();
+            DIConfiguration.Configurate(services, Configuration);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -55,7 +47,7 @@ namespace Bitcoind.Service
             }
 
             app.UseMvc();
-            loggerFactory.AddFile("Logs/{Date}.txt");
+            loggerFactory.AddFile("Logs/{Date}.txt", LogLevel.Error);
 
             using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
             {

@@ -3,25 +3,31 @@ using Bitcoind.Core.Automapper;
 using Bitcoind.Core.Bitcoind;
 using Bitcoind.Core.DAL;
 using Bitcoind.Core.Services;
+using Bitcoind.Service.Helpers;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 
-namespace BitcoindApi.Tests
+namespace Bitcoind.Service.Tests
 {
     [TestFixture]
     public class BitcoindTests
     {
-        private BitcoindClient _bitcoindClient;
+        private IBitcoindClient _bitcoindClient;
         private DataContext _dataContext;
         private WalletService _walletService;
 
         [SetUp]
         public void Setup()
         {
-            var provider = ConfigurateDependencyInjection.Configurate();
-            _bitcoindClient = (BitcoindClient)provider.GetService(typeof(BitcoindClient));
-            _walletService = (WalletService)provider.GetService(typeof(WalletService));
+            var services = new ServiceCollection();
+            var configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
+            DIConfiguration.Configurate(services, configuration);
+            var provider = services.BuildServiceProvider();
 
-            _dataContext = (DataContext)provider.GetService(typeof(DataContext));
+            _bitcoindClient = provider.GetRequiredService<IBitcoindClient>();
+            //_walletService = (WalletService)provider.GetService(typeof(WalletService));
+            //_dataContext = (DataContext)provider.GetService(typeof(DataContext));
 
             //init automapper
             Mapper.Initialize(cfg => {
@@ -73,6 +79,17 @@ namespace BitcoindApi.Tests
         {
             var wallets = _walletService.GetWalletsAsync().Result;
             _walletService.UpdateWalletsAsync(wallets).Wait();
+            //_dataContext.Database.EnsureCreated();
+            //var walls = _dataContext.HotWallets.ToList();
+
+            //_dataContext.BulkInsertOrUpdate(parsedAddresses);
+            //var newwalls = _dataContext.HotWallets.ToList();
+        }
+
+        [TestCase("2NCEZmYTnzCDdpGqxN5UyyN7XM5REA3AREsL")]
+        public void ValidateAddress(string address)
+        {
+            var result = _bitcoindClient.ValidateAddressAsync(address).Result;
             //_dataContext.Database.EnsureCreated();
             //var walls = _dataContext.HotWallets.ToList();
 
