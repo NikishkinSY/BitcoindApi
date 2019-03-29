@@ -10,7 +10,7 @@ namespace Bitcoind.Core.Bitcoind
         Task<Response<string>> SendToAddressAsync(string address, decimal amount, string wallet = null);
         Task<Response<List<string>>> GetListWalletsAsync();
         Task<Response<decimal>> GetBalanceAsync(string wallet);
-        Task<Response<List<BitcoinTransactionDto>>> GetListTransactionsAsync(string wallet);
+        Task<Response<List<BitcoinTransactionDto>>> GetListTransactionsAsync(string wallet, int count = 20);
         Task<Response<ValidateAddressResult>> ValidateAddressAsync(string address);
         Task<Response<BitcoinSingleTransactionDto>> GetTransactionAsync(string txid);
     }

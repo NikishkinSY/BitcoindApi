@@ -82,7 +82,7 @@ namespace Bitcoind.Core.Bitcoind
             return await HandleRequestAsync<Response<decimal>>(request);
         }
 
-        public async Task<Response<List<BitcoinTransactionDto>>> GetListTransactionsAsync(string wallet)
+        public async Task<Response<List<BitcoinTransactionDto>>> GetListTransactionsAsync(string wallet, int count = 20)
         {
             var request = GetRequest(wallet);
 
@@ -90,7 +90,8 @@ namespace Bitcoind.Core.Bitcoind
             {
                 jsonrpc = _version,
                 id = string.Empty,
-                method = ListTransactionsCommand
+                method = ListTransactionsCommand,
+                @params = new JsonArray { "*", count, 0 }
             });
 
             return await HandleRequestAsync<Response<List<BitcoinTransactionDto>>>(request);

@@ -6,8 +6,6 @@ using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using BitcoindApi.Cache;
-using Microsoft.Extensions.Caching.Memory;
 
 namespace Bitcoind.Core.Services
 {
@@ -15,16 +13,13 @@ namespace Bitcoind.Core.Services
     {
         private readonly DataContext _dataContext;
         private readonly IBitcoindClient _bitcoindClient;
-        private readonly IMemoryCache _cache;
 
         public TransactionService(
             DataContext dataContext,
-            IBitcoindClient bitcoindClient,
-            IMemoryCache cache)
+            IBitcoindClient bitcoindClient)
         {
             _dataContext = dataContext;
             _bitcoindClient = bitcoindClient;
-            _cache = cache;
         }
 
         public async Task<IEnumerable<Transaction>> PullTransactionsAsync()
@@ -59,12 +54,7 @@ namespace Bitcoind.Core.Services
                 }
             }
 
-            var amount = await _dataContext.SaveChangesAsync();
-
-            if (amount > 0)
-            {
-                _cache.Remove(CacheConsts.LastIncomeTransactionsKey);
-            }
+            await _dataContext.SaveChangesAsync();
 
             return newTransactions;
         }

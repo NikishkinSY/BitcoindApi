@@ -20,19 +20,13 @@ namespace Bitcoind.Service.Controllers
     {
         private readonly ITransactionService _transactionService;
         private readonly IBitcoindClient _bitcoindClient;
-        private readonly IMemoryCache _cache;
-        private readonly DataContext _dataContext;
 
         public BitcoinController(
             ITransactionService transactionService,
-            IBitcoindClient bitcoindClient,
-            IMemoryCache cache,
-            DataContext dataContext)
+            IBitcoindClient bitcoindClient)
         {
             _transactionService = transactionService;
             _bitcoindClient = bitcoindClient;
-            _cache = cache;
-            _dataContext = dataContext;
         }
 
         [HttpPost("sendbtc")]
@@ -53,17 +47,8 @@ namespace Bitcoind.Service.Controllers
         [HttpGet("getlast")]
         public async Task<IEnumerable<Core.Dto.TransactionDto>> GetLast()
         {
-            var cacheTransactions = _cache.Get<IEnumerable<Core.Dto.TransactionDto>>(CacheConsts.LastIncomeTransactionsKey);
-
-            if (cacheTransactions == null)
-            {
-                var lastIncomeTransactions = await _transactionService.GetLastIncomeTransactionsAsync();
-                var lastIncomeTransactionsDto = Mapper.Map<List<Core.Dto.TransactionDto>>(lastIncomeTransactions);
-                _cache.Set(CacheConsts.LastIncomeTransactionsKey, lastIncomeTransactionsDto);
-                return lastIncomeTransactionsDto;
-            }
-
-            return cacheTransactions;
+            var lastIncomeTransactions = await _transactionService.GetLastIncomeTransactionsAsync();
+            return Mapper.Map<List<Core.Dto.TransactionDto>>(lastIncomeTransactions);
         }
     }
 }
