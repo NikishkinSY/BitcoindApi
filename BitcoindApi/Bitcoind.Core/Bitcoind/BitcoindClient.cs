@@ -133,7 +133,7 @@ namespace Bitcoind.Core.Bitcoind
             if (!response.IsSuccessful)
             {
                 var e = new BitcoindException(response.Content ?? response.ErrorMessage);
-                e.Data.Add("error", response.Data.Error);
+                e.Data.Add("error", response.Data?.Error);
                 throw e;
             }
 
