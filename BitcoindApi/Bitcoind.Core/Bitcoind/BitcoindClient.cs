@@ -38,7 +38,7 @@ namespace Bitcoind.Core.Bitcoind
             _logger = logger;
         }
         
-        public async Task<Response<string>> SendToAddressAsync(string address, decimal amount, string wallet = null)
+        public async Task<string> SendToAddressAsync(string address, decimal amount, string wallet = null)
         {
             var request = GetRequest(wallet);
 
@@ -50,10 +50,10 @@ namespace Bitcoind.Core.Bitcoind
                 @params = new JsonArray { address, amount }
             });
 
-            return await HandleRequestAsync<Response<string>>(request);
+            return await HandleRequestAsync<string>(request);
         }
 
-        public async Task<Response<List<string>>> GetListWalletsAsync()
+        public async Task<List<string>> GetListWalletsAsync()
         {
             var request = GetRequest(string.Empty);
 
@@ -64,10 +64,10 @@ namespace Bitcoind.Core.Bitcoind
                 method = ListWalletsCommand
             });
 
-            return await HandleRequestAsync<Response<List<string>>>(request);
+            return await HandleRequestAsync<List<string>>(request);
         }
 
-        public async Task<Response<decimal>> GetBalanceAsync(string wallet)
+        public async Task<decimal> GetBalanceAsync(string wallet)
         {
             var request = GetRequest(wallet);
             
@@ -79,10 +79,10 @@ namespace Bitcoind.Core.Bitcoind
                 @params = new JsonArray { "*" }
             });
 
-            return await HandleRequestAsync<Response<decimal>>(request);
+            return await HandleRequestAsync<decimal>(request);
         }
 
-        public async Task<Response<List<BitcoinTransactionDto>>> GetListTransactionsAsync(string wallet, int count = 20)
+        public async Task<List<BitcoinTransactionDto>> GetListTransactionsAsync(string wallet, int count = 20)
         {
             var request = GetRequest(wallet);
 
@@ -94,10 +94,10 @@ namespace Bitcoind.Core.Bitcoind
                 @params = new JsonArray { "*", count, 0 }
             });
 
-            return await HandleRequestAsync<Response<List<BitcoinTransactionDto>>>(request);
+            return await HandleRequestAsync<List<BitcoinTransactionDto>>(request);
         }
 
-        public async Task<Response<ValidateAddressResult>> ValidateAddressAsync(string address)
+        public async Task<ValidateAddressResult> ValidateAddressAsync(string address)
         {
             var request = GetRequest(string.Empty);
 
@@ -109,12 +109,12 @@ namespace Bitcoind.Core.Bitcoind
                 @params = new JsonArray { address }
             });
 
-            return await HandleRequestAsync<Response<ValidateAddressResult>>(request);
+            return await HandleRequestAsync<ValidateAddressResult>(request);
         }
 
-        public async Task<Response<BitcoinSingleTransactionDto>> GetTransactionAsync(string txid)
+        public async Task<BitcoinSingleTransactionDto> GetTransactionAsync(string wallet, string txid)
         {
-            var request = GetRequest(string.Empty);
+            var request = GetRequest(wallet);
 
             request.AddJsonBody(new
             {
@@ -124,18 +124,20 @@ namespace Bitcoind.Core.Bitcoind
                 @params = new JsonArray { txid }
             });
 
-            return await HandleRequestAsync<Response<BitcoinSingleTransactionDto>>(request);
+            return await HandleRequestAsync<BitcoinSingleTransactionDto>(request);
         }
 
         private async Task<T> HandleRequestAsync<T>(IRestRequest request)
         {
-            var response = await _client.ExecuteTaskAsync<T>(request);
+            var response = await _client.ExecuteTaskAsync<Response<T>>(request);
             if (!response.IsSuccessful)
             {
-                throw new BitcoindException(response.Content ?? response.ErrorMessage);
+                var e = new BitcoindException(response.Content ?? response.ErrorMessage);
+                e.Data.Add("error", response.Data.Error);
+                throw e;
             }
 
-            return response.Data;
+            return response.Data.Result;
         }
 
         private RestClient CreateClient()

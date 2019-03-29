@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System;
+using AutoMapper;
 using Bitcoind.Core.Bitcoind;
 using Bitcoind.Core.DAL;
 using Bitcoind.Core.DAL.Entities;
@@ -6,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Bitcoind.Core.Bitcoind.DTO;
 
 namespace Bitcoind.Core.Services
 {
@@ -22,15 +24,15 @@ namespace Bitcoind.Core.Services
             _bitcoindClient = bitcoindClient;
         }
 
-        public async Task<IEnumerable<Transaction>> PullTransactionsAsync()
+        public async Task<IEnumerable<Transaction>> PullTransactionsAsync(int count)
         {
             var newTransactions = new List<Transaction>();
             var wallets = await _bitcoindClient.GetListWalletsAsync();
 
-            foreach (var wallet in wallets.Result)
+            foreach (var wallet in wallets)
             {
-                var transactionsDto = await _bitcoindClient.GetListTransactionsAsync(wallet);
-                var transactionsDb = Mapper.Map<List<Transaction>>(transactionsDto.Result);
+                var transactionsDto = await _bitcoindClient.GetListTransactionsAsync(wallet, count);
+                var transactionsDb = Mapper.Map<List<Transaction>>(transactionsDto);
 
                 foreach (var transaction in transactionsDb)
                 {
@@ -73,10 +75,27 @@ namespace Bitcoind.Core.Services
 
         public async Task<bool> IsNewSendReceiveTransactionAsync(string txid)
         {
-            var transactionDto = await _bitcoindClient.GetTransactionAsync(txid);
-            var transaction = Mapper.Map<Transaction>(transactionDto.Result);
+            var wallets = await _bitcoindClient.GetListWalletsAsync();
 
-            return transaction.Category != Category.Unknown;
+            foreach (var wallet in wallets)
+            {
+                try
+                {
+                    var transactionDto = await _bitcoindClient.GetTransactionAsync(wallet, txid);
+                    var transaction = Mapper.Map<Transaction>(transactionDto);
+
+                    return transaction.Category != Category.Unknown;
+                }
+                catch (BitcoindException e)
+                {
+                    // if code=-5 it means wallet doesn't contain this transaction
+                    var error = (Error)e.Data["error"];
+                    if (error?.Code != -5)
+                        throw;
+                }
+            }
+
+            return false;
         }
     }
 }

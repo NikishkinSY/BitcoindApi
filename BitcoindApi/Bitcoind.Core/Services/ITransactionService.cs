@@ -6,7 +6,7 @@ namespace Bitcoind.Core.Services
 {
     public interface ITransactionService
     {
-        Task<IEnumerable<Transaction>> PullTransactionsAsync();
+        Task<IEnumerable<Transaction>> PullTransactionsAsync(int count);
         Task<IEnumerable<Transaction>> GetLastIncomeTransactionsAsync();
         Task<bool> IsNewSendReceiveTransactionAsync(string txid);
     }

@@ -8,5 +8,6 @@
         public string BitcoindRpcJsonVersion { get; set; }
         public int UpdateWalletsDelayInSeconds { get; set; }
         public int UpdateTransactionsDelayInSeconds { get; set; }
+        public int MaxGetTransactions { get; set; }
     }
 }

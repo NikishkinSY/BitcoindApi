@@ -33,7 +33,7 @@ namespace Bitcoind.Service.Controllers
         public async Task<IActionResult> SendBtc([FromQuery] string address, [FromQuery] decimal amount, [FromQuery] string fromWallet = null)
         {
             if (!BitcoinHelper.CheckAddress(address)
-                && !(await _bitcoindClient.ValidateAddressAsync(address)).Result.Isvalid)
+                && !(await _bitcoindClient.ValidateAddressAsync(address)).Isvalid)
                 return StatusCode(400, $"invalid address ({address})");
 
             if (amount <= 0)

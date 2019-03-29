@@ -42,7 +42,7 @@ namespace Bitcoind.Service.HostServices
         {
             try
             {
-                await _transactionService.PullTransactionsAsync();
+                await _transactionService.PullTransactionsAsync(_appSettings.MaxGetTransactions);
             }
             catch (BitcoindException e)
             {

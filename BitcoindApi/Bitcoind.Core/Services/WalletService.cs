@@ -25,13 +25,13 @@ namespace Bitcoind.Core.Services
             var balances = new List<HotWallet>();
             var wallets = await _bitcoindClient.GetListWalletsAsync();
 
-            foreach (var wallet in wallets.Result)
+            foreach (var wallet in wallets)
             {
                 var balance = await _bitcoindClient.GetBalanceAsync(wallet);
                 balances.Add(new HotWallet
                 {
                     Address = wallet,
-                    Balance = balance.Result
+                    Balance = balance
                 });
             }
 

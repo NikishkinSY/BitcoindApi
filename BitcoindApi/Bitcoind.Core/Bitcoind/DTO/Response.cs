@@ -1,4 +1,4 @@
-﻿namespace Bitcoind.Core.Bitcoind
+﻿namespace Bitcoind.Core.Bitcoind.DTO
 {
     public class Response<T>
     {
