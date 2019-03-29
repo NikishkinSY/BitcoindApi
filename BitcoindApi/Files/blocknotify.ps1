@@ -1,0 +1,1 @@
+Invoke-WebRequest http://localhost:50000/api/notify/block
