@@ -1,8 +1,14 @@
+Update wallets/balance and transactions in two ways:
+- Via timer, you can set delay in seconds in appsettings.
+- Via notifications from bitcoind, for quick response.
+
 Check:
 1. Setup bitcoind regtest (https://bitcoin.org/en/developer-examples)
 2. Put "Files/bitcoin.conf" to "c:\Users\*YOU_USER*\AppData\Roaming\Bitcoin\"
 3. Put blocknotify.ps1 and walletnotify.ps1 to "c:\My\" as mentioned in bitcoin.conf
 4. Default address is localhost:50000, If you want to change it you should change in Project Properties and also in blocknotify.ps1, walletnotify.ps1, To make correct notifications.
+5. Set connection string in appsettings.
+6. Set bitcoind params in appsettings. (default address for bitciond http://127.0.0.1:18443)
 
 WebApi:
 - GetLast: GET http://localhost:50000/api/bitcoin/getlast
