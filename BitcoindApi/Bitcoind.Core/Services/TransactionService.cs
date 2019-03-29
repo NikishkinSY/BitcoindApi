@@ -24,14 +24,14 @@ namespace Bitcoind.Core.Services
             _bitcoindClient = bitcoindClient;
         }
 
-        public async Task<IEnumerable<Transaction>> PullTransactionsAsync(int count)
+        public async Task<IEnumerable<Transaction>> PullTransactionsAsync(int maxGetTransactions = 20, int updateTransactionsWithConfirmationLessThan = 6)
         {
             var newTransactions = new List<Transaction>();
             var wallets = await _bitcoindClient.GetListWalletsAsync();
 
             foreach (var wallet in wallets)
             {
-                var transactionsDto = await _bitcoindClient.GetListTransactionsAsync(wallet, count);
+                var transactionsDto = await _bitcoindClient.GetListTransactionsAsync(wallet, maxGetTransactions);
                 var transactionsDb = Mapper.Map<List<Transaction>>(transactionsDto);
 
                 foreach (var transaction in transactionsDb)
@@ -49,7 +49,7 @@ namespace Bitcoind.Core.Services
                         _dataContext.Transactions.Add(transaction);
                         newTransactions.Add(transaction);
                     }
-                    else if (tran.Confirmations <= 6)
+                    else if (tran.Confirmations <= updateTransactionsWithConfirmationLessThan)
                     {
                         tran.Confirmations = transaction.Confirmations;
                     }
@@ -61,9 +61,9 @@ namespace Bitcoind.Core.Services
             return newTransactions;
         }
 
-        public async Task<IEnumerable<Transaction>> GetLastIncomeTransactionsAsync()
+        public async Task<IEnumerable<Transaction>> GetLastIncomeTransactionsAsync(int incomeTransactionsWithConfirmationsLessThan = 3)
         {
-            var lastIncomeTransactions = await _dataContext.Transactions.Where(x => x.Confirmations < 3 || !x.IsShown).ToListAsync();
+            var lastIncomeTransactions = await _dataContext.Transactions.Where(x => x.Category == Category.Receive && (x.Confirmations < incomeTransactionsWithConfirmationsLessThan || !x.IsShown)).ToListAsync();
             foreach (var transaction in lastIncomeTransactions)
             {
                 transaction.IsShown = true;

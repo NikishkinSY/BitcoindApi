@@ -11,6 +11,7 @@ using AutoMapper;
 using Bitcoind.Core.DAL;
 using Bitcoind.Core.Helpers;
 using Bitcoind.Core.Services;
+using Microsoft.Extensions.Options;
 
 namespace Bitcoind.Service.Controllers
 {
@@ -20,13 +21,16 @@ namespace Bitcoind.Service.Controllers
     {
         private readonly ITransactionService _transactionService;
         private readonly IBitcoindClient _bitcoindClient;
+        private readonly AppSettings _appSettings;
 
         public BitcoinController(
             ITransactionService transactionService,
-            IBitcoindClient bitcoindClient)
+            IBitcoindClient bitcoindClient,
+            AppSettings appSettings)
         {
             _transactionService = transactionService;
             _bitcoindClient = bitcoindClient;
+            _appSettings = appSettings;
         }
 
         [HttpPost("sendbtc")]
@@ -47,7 +51,7 @@ namespace Bitcoind.Service.Controllers
         [HttpGet("getlast")]
         public async Task<IEnumerable<Core.Dto.TransactionDto>> GetLast()
         {
-            var lastIncomeTransactions = await _transactionService.GetLastIncomeTransactionsAsync();
+            var lastIncomeTransactions = await _transactionService.GetLastIncomeTransactionsAsync(_appSettings.ShowIncomeTransactionsWithConfirmationLessThan);
             return Mapper.Map<List<Core.Dto.TransactionDto>>(lastIncomeTransactions);
         }
     }
