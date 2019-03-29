@@ -1,8 +1,14 @@
-﻿using Bitcoind.Core.Services;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Bitcoind.Core.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using System.Threading.Tasks;
+using Bitcoind.Core.Bitcoind;
 using Bitcoind.Core.Helpers;
+using Bitcoind.Service.HostServices;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Bitcoind.Service.Controllers
@@ -11,36 +17,35 @@ namespace Bitcoind.Service.Controllers
     [ApiController]
     public class NotifyController : ControllerBase
     {
-        private readonly ITransactionService _transactionService;
-        private readonly IWalletService _walletService;
-        private readonly IMemoryCache _cache;
         private readonly ILogger<GlobalExceptionFilter> _logger;
+        private readonly IEnumerable<IHostedService> _hostedServices;
 
         public NotifyController(
-            ITransactionService transactionService,
-            IWalletService walletService,
-            IMemoryCache cache,
-            ILogger<GlobalExceptionFilter> logger)
+            ILogger<GlobalExceptionFilter> logger,
+            IEnumerable<IHostedService> hostedServices)
         {
-            _transactionService = transactionService;
-            _walletService = walletService;
-            _cache = cache;
             _logger = logger;
-        }
-        
-        [HttpGet("block")]
-        public async Task Block()
-        {
-            _logger.LogInformation("New Block");
-            var wallets = await _walletService.GetWalletsAsync();
-            await _walletService.UpdateWalletsAsync(wallets);
+            _hostedServices = hostedServices;
         }
 
-        //[HttpGet("wallet")]
-        //public async Task Wallet()
-        //{
-        //    _cache.Set(CacheConsts.LastIncomeTransactionsKey,
-        //        await _transactionService.GetLastIncomeTransactionsAsync());
-        //}
+        // block notify when new block come
+        [HttpGet("block")]
+        public IActionResult Block()
+        {
+            _logger.LogInformation("New Block");
+            var updateWalletHostedService = _hostedServices.FirstOrDefault(x => x is UpdateWalletsHostedService) as UpdateWalletsHostedService;
+            updateWalletHostedService?.ContinueLoop();
+            return StatusCode(200);
+        }
+
+        // wallet notify when new transaction come
+        [HttpGet("wallet")]
+        public IActionResult Wallet()
+        {
+            _logger.LogInformation("New Transaction");
+            var updateTransactionsHostedService = _hostedServices.FirstOrDefault(x => x is UpdateTransactionsHostedService) as UpdateTransactionsHostedService;
+            updateTransactionsHostedService?.ContinueLoop();
+            return StatusCode(200);
+        }
     }
 }

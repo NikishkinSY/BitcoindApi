@@ -6,6 +6,7 @@ using Bitcoind.Core.Services;
 using Bitcoind.Service.Helpers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using NUnit.Framework;
 
 namespace Bitcoind.Service.Tests
@@ -24,6 +25,7 @@ namespace Bitcoind.Service.Tests
             var configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
             DIConfiguration.Configurate(services, configuration);
             var provider = services.BuildServiceProvider();
+            var servs = provider.GetServices<IHostedService>();
 
             _bitcoindClient = provider.GetRequiredService<IBitcoindClient>();
             //_walletService = (WalletService)provider.GetService(typeof(WalletService));

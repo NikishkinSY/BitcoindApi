@@ -115,7 +115,7 @@ namespace Bitcoind.Core.Bitcoind
             var response = await _client.ExecuteTaskAsync<T>(request);
             if (!response.IsSuccessful)
             {
-                _logger.LogError($"Bad Response: {response.Content}");
+                throw new BitcoindException(response.Content ?? response.ErrorMessage);
             }
 
             return response.Data;

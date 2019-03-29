@@ -3,6 +3,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using RestSharp.Extensions;
 
 namespace Bitcoind.Service.HostServices
 {
@@ -11,7 +12,10 @@ namespace Bitcoind.Service.HostServices
         private Task _executingTask;
         private readonly CancellationTokenSource _stoppingCts =
             new CancellationTokenSource();
+        private CancellationTokenSource _continueLoop;
+        private Object _continueLoopLock = new Object();
         protected IServiceScope _serviceScope;
+
 
         protected abstract Task ExecuteAsync(CancellationToken stoppingToken);
 
@@ -42,6 +46,7 @@ namespace Bitcoind.Service.HostServices
             try
             {
                 // Signal cancellation to the executing method
+                _continueLoop.Cancel();
                 _stoppingCts.Cancel();
             }
             finally
@@ -50,12 +55,36 @@ namespace Bitcoind.Service.HostServices
                 await Task.WhenAny(_executingTask, Task.Delay(Timeout.Infinite,
                     cancellationToken));
             }
+        }
 
+        public void ContinueLoop()
+        {
+            lock (_continueLoopLock)
+            {
+                _continueLoop?.Cancel();
+            }
+        }
+
+        protected async Task Delay(int seconds)
+        {
+            try
+            {
+                lock (_continueLoopLock)
+                {
+                    _continueLoop = new CancellationTokenSource();
+                }
+
+                await Task.Delay(seconds * 1000, _continueLoop.Token);
+            }
+            catch (TaskCanceledException)
+            {
+            }
         }
 
         public virtual void Dispose()
         {
             _serviceScope?.Dispose();
+            _continueLoop.Cancel();
             _stoppingCts.Cancel();
         }
     }

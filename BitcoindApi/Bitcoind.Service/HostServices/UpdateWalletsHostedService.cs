@@ -1,4 +1,5 @@
-﻿using Bitcoind.Core.Helpers;
+﻿using Bitcoind.Core.Bitcoind;
+using Bitcoind.Core.Helpers;
 using Bitcoind.Core.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -15,38 +16,26 @@ namespace Bitcoind.Service.HostServices
         private readonly AppSettings _appSettings;
 
         public UpdateWalletsHostedService(
-            ILogger<UpdateWalletsHostedService> logger,
+            ILoggerFactory loggerFactory,
             IServiceScopeFactory scopeFactory)
         {
-            _logger = logger;
             _serviceScope = scopeFactory.CreateScope();
+            _logger = loggerFactory.CreateLogger<UpdateWalletsHostedService>();
             _walletService = _serviceScope.ServiceProvider.GetRequiredService<IWalletService>();
             _appSettings = _serviceScope.ServiceProvider.GetRequiredService<AppSettings>();
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _logger.LogDebug("UpdateWalletsHostedService is starting.");
-
-            stoppingToken.Register(() =>
-                _logger.LogDebug("UpdateWallets background task is stopping."));
-
+            stoppingToken.Register(() => {});
             if (_appSettings.UpdateWalletsDelayInSeconds > 0)
             {
                 while (!stoppingToken.IsCancellationRequested)
                 {
-                    _logger.LogDebug("UpdateWallets task doing background work.");
-
                     await UpdateWallets();
-                    await Task.Delay(_appSettings.UpdateWalletsDelayInSeconds * 1000, stoppingToken);
+                    await Delay(_appSettings.UpdateWalletsDelayInSeconds);
                 }
             }
-            else
-            {
-                _logger.LogDebug("UpdateWalletsDelayInSeconds is not set in config file.");
-            }
-
-            _logger.LogDebug("UpdateWallets background task is stopping.");
         }
 
         private async Task UpdateWallets()
@@ -56,16 +45,14 @@ namespace Bitcoind.Service.HostServices
                 var wallets = await _walletService.GetWalletsAsync();
                 await _walletService.UpdateWalletsAsync(wallets);
             }
+            catch (BitcoindException e)
+            {
+                _logger.LogError(e, $"Error during proccesing bitcoind command ({e.Message})");
+            }
             catch (Exception e)
             {
-                _logger.LogError(e, "UpdateWalletsHostedService");
+                _logger.LogError(e, $"Unexpected Error ({e.Message})");
             }
-        }
-
-        public override void Dispose()
-        {
-            _serviceScope.Dispose();
-            base.Dispose();
         }
     }
 }

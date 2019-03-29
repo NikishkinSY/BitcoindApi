@@ -25,13 +25,13 @@ namespace Bitcoind.Core.Services
         public async Task<List<Transaction>> PullTransactionsAsync()
         {
             var newTransactions = new List<Transaction>();
-
             var wallets = await _bitcoindClient.GetListWalletsAsync();
+
             foreach (var wallet in wallets.Result)
             {
                 var transactionsDto = await _bitcoindClient.GetListTransactionsAsync(wallet);
                 var transactionsDb = Mapper.Map<List<Transaction>>(transactionsDto.Result);
-                
+
                 foreach (var transaction in transactionsDb)
                 {
                     if (transaction.Category == Category.Unknown)

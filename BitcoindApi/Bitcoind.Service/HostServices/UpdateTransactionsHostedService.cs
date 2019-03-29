@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Bitcoind.Core.Bitcoind;
 
 namespace Bitcoind.Service.HostServices
 {
@@ -31,28 +32,15 @@ namespace Bitcoind.Service.HostServices
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _logger.LogDebug("UpdateTransactionsHostedService is starting.");
-
-            stoppingToken.Register(() =>
-                _logger.LogDebug("UpdateTransactions background task is stopping."));
-            
+            stoppingToken.Register(() => { });
             if (_appSettings.UpdateTransactionsDelayInSeconds > 0)
             {
                 while (!stoppingToken.IsCancellationRequested)
                 {
-                    _logger.LogDebug("UpdateTransactions task doing background work.");
-
                     await UpdateTransactions();
-
-                    await Task.Delay(_appSettings.UpdateTransactionsDelayInSeconds * 1000, stoppingToken);
+                    await Delay(_appSettings.UpdateTransactionsDelayInSeconds);
                 }
             }
-            else
-            {
-                _logger.LogDebug("UpdateTransactionsDelayInSeconds is not set in config file.");
-            }
-
-            _logger.LogDebug("UpdateTransactions background task is stopping.");
         }
 
         private async Task UpdateTransactions()
@@ -62,9 +50,13 @@ namespace Bitcoind.Service.HostServices
                 _cache.Set(CacheConsts.LastIncomeTransactionsKey,
                     await _transactionService.GetLastIncomeTransactionsAsync());
             }
+            catch (BitcoindException e)
+            {
+                _logger.LogError(e, $"Error during proccesing bitcoind command ({e.Message})");
+            }
             catch (Exception e)
             {
-                _logger.LogError(e, "UpdateTransactionsHostedService");
+                _logger.LogError(e, $"Unexpected Error ({e.Message})");
             }
         }
     }

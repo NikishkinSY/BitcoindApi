@@ -1,8 +1,9 @@
-﻿using Bitcoind.Core.Bitcoind;
-using Bitcoind.Core.Helpers;
+﻿using System;
+using Bitcoind.Core.Bitcoind;
 using BitcoindApi.Cache;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -14,18 +15,22 @@ namespace Bitcoind.Service.Controllers
     {
         private readonly IBitcoindClient _bitcoindClient;
         private readonly IMemoryCache _cache;
+        private readonly ILogger<BitcoinController> _logger;
 
         public BitcoinController(
+            ILogger<BitcoinController> logger,
             IBitcoindClient bitcoindClient,
             IMemoryCache cache)
         {
             _bitcoindClient = bitcoindClient;
             _cache = cache;
+            _logger = logger;
         }
 
         [HttpPost("sendbtc")]
         public async Task<IActionResult> SendBtc([FromQuery] string address, [FromQuery] decimal amount, [FromQuery] string fromWallet = null)
         {
+            throw new BitcoindException("sdfsf");
             var result = await _bitcoindClient.ValidateAddressAsync(address);
             if (!result.Result.Isvalid)
                 return StatusCode(400, $"invalid address ({address})");
@@ -33,12 +38,7 @@ namespace Bitcoind.Service.Controllers
             if (amount <= 0)
                 return StatusCode(400, $"invalid amount ({amount})");
 
-            var response = await _bitcoindClient.SendToAddressAsync(address, amount, fromWallet);
-
-            if (response.Error != null)
-            {
-                return StatusCode(400, response.Error.Message);
-            }
+            await _bitcoindClient.SendToAddressAsync(address, amount, fromWallet);
 
             return StatusCode(200);
         }

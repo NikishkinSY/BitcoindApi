@@ -25,7 +25,7 @@ namespace Bitcoind.Service.Helpers
             services.AddTransient<IWalletService, WalletService>();
 
             services.AddSingleton<IHostedService, UpdateWalletsHostedService>();
-            services.AddSingleton<IHostedService, UpdateTransactionsHostedService>();
+            //services.AddSingleton<IHostedService, UpdateTransactionsHostedService>();
         }
     }
 }

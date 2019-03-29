@@ -1,15 +1,11 @@
 ﻿using AutoMapper;
 using Bitcoind.Core.Automapper;
-using Bitcoind.Core.Bitcoind;
 using Bitcoind.Core.DAL;
 using Bitcoind.Core.Helpers;
-using Bitcoind.Core.Services;
 using Bitcoind.Service.Helpers;
-using Bitcoind.Service.HostServices;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -47,7 +43,7 @@ namespace Bitcoind.Service
             }
 
             app.UseMvc();
-            loggerFactory.AddFile("Logs/{Date}.txt", LogLevel.Error);
+            LoggerHelper.SetUpLoggerFactory(loggerFactory);
 
             using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
             {
