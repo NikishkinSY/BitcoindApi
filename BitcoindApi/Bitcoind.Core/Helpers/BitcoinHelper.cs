@@ -16,5 +16,14 @@
 
             return true;
         }
+
+        public static bool ChechTxid(string txid)
+        {
+            if (string.IsNullOrWhiteSpace(txid))
+                return false;
+
+            return true;
+
+        }
     }
 }

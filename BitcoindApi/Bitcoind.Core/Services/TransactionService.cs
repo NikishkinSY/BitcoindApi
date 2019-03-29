@@ -6,6 +6,8 @@ using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using BitcoindApi.Cache;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Bitcoind.Core.Services
 {
@@ -13,16 +15,19 @@ namespace Bitcoind.Core.Services
     {
         private readonly DataContext _dataContext;
         private readonly IBitcoindClient _bitcoindClient;
+        private readonly IMemoryCache _cache;
 
         public TransactionService(
             DataContext dataContext,
-            IBitcoindClient bitcoindClient)
+            IBitcoindClient bitcoindClient,
+            IMemoryCache cache)
         {
             _dataContext = dataContext;
             _bitcoindClient = bitcoindClient;
+            _cache = cache;
         }
 
-        public async Task<List<Transaction>> PullTransactionsAsync()
+        public async Task<IEnumerable<Transaction>> PullTransactionsAsync()
         {
             var newTransactions = new List<Transaction>();
             var wallets = await _bitcoindClient.GetListWalletsAsync();
@@ -54,18 +59,34 @@ namespace Bitcoind.Core.Services
                 }
             }
 
-            await _dataContext.SaveChangesAsync();
+            var amount = await _dataContext.SaveChangesAsync();
+
+            if (amount > 0)
+            {
+                _cache.Remove(CacheConsts.LastIncomeTransactionsKey);
+            }
 
             return newTransactions;
         }
 
-        public async Task<IEnumerable<Dto.TransactionDto>> GetLastIncomeTransactionsAsync()
+        public async Task<IEnumerable<Transaction>> GetLastIncomeTransactionsAsync()
         {
-            var newTransactions = await PullTransactionsAsync();
-            var newIncomeTransactions = newTransactions.Where(x => x.Category == Category.Receive);
-            var notConfirmedIncomeTransactions = await _dataContext.Transactions.Where(x => x.Confirmations < 3).ToListAsync();
-            var lastIncomeTransactions = notConfirmedIncomeTransactions.Union(newIncomeTransactions).ToList();
-            return Mapper.Map<List<Dto.TransactionDto>>(lastIncomeTransactions.OrderBy(x => x.Date));
+            var lastIncomeTransactions = await _dataContext.Transactions.Where(x => x.Confirmations < 3 || !x.IsShown).ToListAsync();
+            foreach (var transaction in lastIncomeTransactions)
+            {
+                transaction.IsShown = true;
+            }
+
+            await _dataContext.SaveChangesAsync();
+            return lastIncomeTransactions.OrderBy(x => x.Date);
+        }
+
+        public async Task<bool> IsNewSendReceiveTransactionAsync(string txid)
+        {
+            var transactionDto = await _bitcoindClient.GetTransactionAsync(txid);
+            var transaction = Mapper.Map<Transaction>(transactionDto.Result);
+
+            return transaction.Category != Category.Unknown;
         }
     }
 }

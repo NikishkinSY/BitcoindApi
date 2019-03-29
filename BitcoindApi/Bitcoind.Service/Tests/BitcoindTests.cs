@@ -1,7 +1,10 @@
-﻿using AutoMapper;
+﻿using System.Collections.Generic;
+using AutoMapper;
 using Bitcoind.Core.Automapper;
 using Bitcoind.Core.Bitcoind;
+using Bitcoind.Core.Bitcoind.DTO;
 using Bitcoind.Core.DAL;
+using Bitcoind.Core.DAL.Entities;
 using Bitcoind.Core.Services;
 using Bitcoind.Service.Helpers;
 using Microsoft.Extensions.Configuration;
@@ -35,6 +38,24 @@ namespace Bitcoind.Service.Tests
             Mapper.Initialize(cfg => {
                 cfg.AddProfile<AutoMapperProfile>();
             });
+
+            var b = new BitcoinSingleTransactionDto()
+            {
+                Txid = "1",
+                Confirmations = 4,
+                Time = 5,
+                Details = new List<Details>
+                {
+                    new Details
+                    {
+                        Address = "2",
+                        Category = "send",
+                        Amount = 3
+                    }
+                }
+            };
+
+            var t = Mapper.Map<Transaction>(b);
         }
 
         [TestCase("first")]

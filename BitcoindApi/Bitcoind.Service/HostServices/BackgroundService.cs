@@ -1,9 +1,8 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
-using RestSharp.Extensions;
 
 namespace Bitcoind.Service.HostServices
 {
@@ -13,9 +12,8 @@ namespace Bitcoind.Service.HostServices
         private readonly CancellationTokenSource _stoppingCts =
             new CancellationTokenSource();
         private CancellationTokenSource _continueLoop;
-        private Object _continueLoopLock = new Object();
+        private readonly Object _continueLoopLock = new Object();
         protected IServiceScope _serviceScope;
-
 
         protected abstract Task ExecuteAsync(CancellationToken stoppingToken);
 
@@ -84,8 +82,8 @@ namespace Bitcoind.Service.HostServices
         public virtual void Dispose()
         {
             _serviceScope?.Dispose();
-            _continueLoop.Cancel();
             _stoppingCts.Cancel();
+            ContinueLoop();
         }
     }
 }

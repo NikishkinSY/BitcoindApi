@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using Bitcoind.Core.Bitcoind;
 using BitcoindApi.Cache;
 using Microsoft.AspNetCore.Mvc;
@@ -6,6 +7,10 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using AutoMapper;
+using Bitcoind.Core.DAL;
+using Bitcoind.Core.Helpers;
+using Bitcoind.Core.Services;
 
 namespace Bitcoind.Service.Controllers
 {
@@ -13,26 +18,28 @@ namespace Bitcoind.Service.Controllers
     [ApiController]
     public class BitcoinController : ControllerBase
     {
+        private readonly ITransactionService _transactionService;
         private readonly IBitcoindClient _bitcoindClient;
         private readonly IMemoryCache _cache;
-        private readonly ILogger<BitcoinController> _logger;
+        private readonly DataContext _dataContext;
 
         public BitcoinController(
-            ILogger<BitcoinController> logger,
+            ITransactionService transactionService,
             IBitcoindClient bitcoindClient,
-            IMemoryCache cache)
+            IMemoryCache cache,
+            DataContext dataContext)
         {
+            _transactionService = transactionService;
             _bitcoindClient = bitcoindClient;
             _cache = cache;
-            _logger = logger;
+            _dataContext = dataContext;
         }
 
         [HttpPost("sendbtc")]
         public async Task<IActionResult> SendBtc([FromQuery] string address, [FromQuery] decimal amount, [FromQuery] string fromWallet = null)
         {
-            throw new BitcoindException("sdfsf");
-            var result = await _bitcoindClient.ValidateAddressAsync(address);
-            if (!result.Result.Isvalid)
+            if (!BitcoinHelper.CheckAddress(address)
+                && !(await _bitcoindClient.ValidateAddressAsync(address)).Result.Isvalid)
                 return StatusCode(400, $"invalid address ({address})");
 
             if (amount <= 0)
@@ -44,9 +51,19 @@ namespace Bitcoind.Service.Controllers
         }
 
         [HttpGet("getlast")]
-        public IEnumerable<Core.Dto.TransactionDto> GetLast()
+        public async Task<IEnumerable<Core.Dto.TransactionDto>> GetLast()
         {
-            return _cache.Get<IEnumerable<Core.Dto.TransactionDto>>(CacheConsts.LastIncomeTransactionsKey);
+            var cacheTransactions = _cache.Get<IEnumerable<Core.Dto.TransactionDto>>(CacheConsts.LastIncomeTransactionsKey);
+
+            if (cacheTransactions == null)
+            {
+                var lastIncomeTransactions = await _transactionService.GetLastIncomeTransactionsAsync();
+                var lastIncomeTransactionsDto = Mapper.Map<List<Core.Dto.TransactionDto>>(lastIncomeTransactions);
+                _cache.Set(CacheConsts.LastIncomeTransactionsKey, lastIncomeTransactionsDto);
+                return lastIncomeTransactionsDto;
+            }
+
+            return cacheTransactions;
         }
     }
 }

@@ -16,6 +16,7 @@ namespace Bitcoind.Core.Bitcoind
         private const string ListWalletsCommand = "listwallets";
         private const string SendToAddressCommand = "sendtoaddress";
         private const string ValidateAddressCommand = "validateaddress";
+        private const string GetTransactionCommand = "gettransaction";
 
         private readonly string _domain;
         private readonly string _login;
@@ -108,6 +109,21 @@ namespace Bitcoind.Core.Bitcoind
             });
 
             return await HandleRequestAsync<Response<ValidateAddressResult>>(request);
+        }
+
+        public async Task<Response<BitcoinSingleTransactionDto>> GetTransactionAsync(string txid)
+        {
+            var request = GetRequest(string.Empty);
+
+            request.AddJsonBody(new
+            {
+                jsonrpc = _version,
+                id = string.Empty,
+                method = GetTransactionCommand,
+                @params = new JsonArray { txid }
+            });
+
+            return await HandleRequestAsync<Response<BitcoinSingleTransactionDto>>(request);
         }
 
         private async Task<T> HandleRequestAsync<T>(IRestRequest request)

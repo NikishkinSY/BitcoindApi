@@ -12,5 +12,6 @@ namespace Bitcoind.Core.Bitcoind
         Task<Response<decimal>> GetBalanceAsync(string wallet);
         Task<Response<List<BitcoinTransactionDto>>> GetListTransactionsAsync(string wallet);
         Task<Response<ValidateAddressResult>> ValidateAddressAsync(string address);
+        Task<Response<BitcoinSingleTransactionDto>> GetTransactionAsync(string txid);
     }
 }

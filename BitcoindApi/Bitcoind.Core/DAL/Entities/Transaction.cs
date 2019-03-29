@@ -12,6 +12,7 @@ namespace Bitcoind.Core.DAL.Entities
         public decimal Amount { get; set; }
         public int Confirmations { get; set; }
         public DateTime Date { get; set; }
+        public bool IsShown { get; set; }
 
         public override bool Equals(object other)
         {

@@ -1,13 +1,11 @@
-﻿using Bitcoind.Core.Helpers;
+﻿using Bitcoind.Core.Bitcoind;
+using Bitcoind.Core.Helpers;
 using Bitcoind.Core.Services;
-using BitcoindApi.Cache;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Bitcoind.Core.Bitcoind;
 
 namespace Bitcoind.Service.HostServices
 {
@@ -16,15 +14,12 @@ namespace Bitcoind.Service.HostServices
         private readonly ITransactionService _transactionService;
         private readonly ILogger<UpdateWalletsHostedService> _logger;
         private readonly AppSettings _appSettings;
-        private readonly IMemoryCache _cache;
 
         public UpdateTransactionsHostedService(
             ILogger<UpdateWalletsHostedService> logger,
-            IServiceScopeFactory scopeFactory,
-            IMemoryCache cache)
+            IServiceScopeFactory scopeFactory)
         {
             _logger = logger;
-            _cache = cache;
             _serviceScope = scopeFactory.CreateScope();
             _transactionService = _serviceScope.ServiceProvider.GetRequiredService<ITransactionService>();
             _appSettings = _serviceScope.ServiceProvider.GetRequiredService<AppSettings>();
@@ -47,8 +42,7 @@ namespace Bitcoind.Service.HostServices
         {
             try
             {
-                _cache.Set(CacheConsts.LastIncomeTransactionsKey,
-                    await _transactionService.GetLastIncomeTransactionsAsync());
+                await _transactionService.PullTransactionsAsync();
             }
             catch (BitcoindException e)
             {
